@@ -20,7 +20,7 @@ export default {
         const instance = axios.create({ baseURL: this.$serverUrl });
 
         instance
-            .get('/helloo')
+            .get('/hello')
             .then((response) => {
                 console.log(response);
             })
