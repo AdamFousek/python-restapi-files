@@ -45,3 +45,18 @@ class RestrictionHelper():
         result = string.replace("/", os.path.sep)
         result = result.replace("\\", os.path.sep)
         return result
+
+    def get_current_path(self):
+        path = ""
+        try:
+            with open("currentPath.txt", "r") as f:
+                lines = f.readlines()
+                for line in lines:
+                    path = line.strip()
+        except IOError:
+            pass
+
+        if not path:
+            abort(400, message="Current path was not set yet.")
+
+        return path

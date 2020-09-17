@@ -7,24 +7,15 @@ import os
 class DirectoryInfo(Resource, RestrictionHelper):
     def get(self):
         """
-        Get information about requested path
+        Get information about current path
         """
-        data = []
-        request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
-        if not requested_path:
-            abort(400, message="Path must not be empty")
+        current_path = self.get_current_path()
 
-        if not os.path.exists(requested_path):
-            abort(404, message="Path was not found in the system!")
-
-        if not os.path.isdir(requested_path):
-            abort(400, message="Path must be a dicertory")
-
-        if self.is_allowed(requested_path):
-            data = self.get_directory_info(requested_path)
-        else:
+        if not self.is_allowed(current_path):
             abort(403, message="You are not allowed to this path")
+
+        data = []
+        data = self.get_directory_info(current_path)
 
         result = {"data": data, "count": len(data)}
         return result
@@ -53,15 +44,19 @@ class DirectoryInfo(Resource, RestrictionHelper):
         Create directory with path and dir_name variables
         """
         request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
+        current_path = self.get_current_path()
         dir_name = request_data['dir_name']
-        full_path = os.path.join(requested_path, dir_name)
 
-        if not requested_path or not dir_name:
+        full_path = os.path.join(current_path, dir_name)
+
+        if not full_path or not dir_name:
             abort(400, message="Path and directory name must not be empty!")
 
         if os.path.exists(full_path):
             abort(400, message="Directory already exists!")
+
+        if not self.is_allowed(full_path):
+            abort(403, message="You are not allowed to this path")
 
         os.makedirs(full_path)
 
@@ -72,17 +67,51 @@ class DirectoryInfo(Resource, RestrictionHelper):
         Remove directory by requested path
         """
         request_data = request.get_json()
+        current_path = self.get_current_path()
+        requested_dir = request_data['dir_name']
+
+        full_path = os.path.join(current_path, requested_dir)
+
+        if not full_path:
+            abort(400, message="Path must not be empty!")
+
+        if not os.path.exists(full_path):
+            abort(400, message="Path was not found in the system!")
+
+        if os.listdir(full_path):
+            abort(400, message="Directory is not empty")
+
+        if not self.is_allowed(full_path):
+            abort(403, message="You are not allowed to this path")
+
+        os.rmdir(full_path)
+
+        return {"message": "OK"}
+
+    def put(self):
+        """
+        Set current path into file
+        """
+        request_data = request.get_json()
         requested_path = self.change_all_slashes(request_data['path'])
 
         if not requested_path:
-            abort(400, message="Path must not be empty!")
+            abort(400, message="Path must not be empty")
 
         if not os.path.exists(requested_path):
-            abort(400, message="Path was not found in the system!")
+            abort(404, message="Path was not found in the system!")
 
-        if os.listdir(requested_path):
-            abort(400, message="Directory is not empty")
+        if not os.path.isdir(requested_path):
+            abort(400, message="Path must be a dicertory")
 
-        os.rmdir(requested_path)
+        if not self.is_allowed(requested_path):
+            abort(403, message="You are not allowed to this path")
+
+        try:
+            with open("currentPath.txt", "w+") as f:
+                path_correct_slashes = self.change_all_slashes(requested_path)
+                f.write(path_correct_slashes + "\n")
+        except IOError:
+            abort(500, message="Can not create file for allowed paths!")
 
         return {"message": "OK"}

@@ -4,7 +4,7 @@ from classes.RestrictionHelper import RestrictionHelper
 import os
 
 
-class SettingsAllowedPaths(Resource):
+class SettingsAllowedPaths(Resource, RestrictionHelper):
     def get(self):
         """
         Get all paths from allowedPaths.txt file and return them

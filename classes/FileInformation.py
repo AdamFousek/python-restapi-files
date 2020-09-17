@@ -11,18 +11,22 @@ class FileInformation(Resource, RestrictionHelper):
         """
         data = []
         request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
-        if not requested_path:
-            abort(400, message="Path must not be empty!")
+        current_path = self.get_current_path()
+        file_name = request_data['file_name']
 
-        if not os.path.exists(requested_path):
-            abort(404, message="Path was not found in the system!")
+        full_path = os.path.join(current_path, file_name)
 
-        if not os.path.isfile(requested_path):
-            abort(400, message="Path must be a file")
+        if not file_name:
+            abort(400, message="File name must not be empty!")
 
-        if self.is_allowed(requested_path):
-            data = self.get_file_info(requested_path)
+        if not os.path.exists(full_path):
+            abort(404, message="File was not found in current path!")
+
+        if not os.path.isfile(full_path):
+            abort(400, message="File name must be a file")
+
+        if self.is_allowed(full_path):
+            data = self.get_file_info(full_path)
         else:
             abort(403, message="You are not allowed to this path")
 
@@ -44,17 +48,20 @@ class FileInformation(Resource, RestrictionHelper):
         Create new file in requested path by requested file_name
         """
         request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
+        current_path = self.get_current_path()
         file_name = request_data['file_name']
-        full_path = os.path.join(requested_path, file_name)
+        full_path = os.path.join(current_path, file_name)
 
-        if not requested_path or not file_name:
-            abort(400, message="Path and file name must not be empty!")
+        if not file_name:
+            abort(400, message="File name must not be empty!")
 
         if os.path.exists(full_path):
             abort(400, message="File already exists!")
 
-        with open(full_path, 'w') as fp:
+        if not self.is_allowed(full_path):
+            abort(403, message="You are not allowed to this path")
+
+        with open(full_path, 'w+') as fp:
             pass
 
         return {"message": "OK"}
@@ -64,17 +71,22 @@ class FileInformation(Resource, RestrictionHelper):
         Remove file from requested path
         """
         request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
+        current_path = self.get_current_path()
+        file_name = request_data['file_name']
+        full_path = os.path.join(current_path, file_name)
 
-        if not requested_path:
-            abort(400, message="Path must not be empty!")
+        if not file_name:
+            abort(400, message="File name must not be empty!")
 
-        if not os.path.exists(requested_path):
-            abort(400, message="Path was not found in the system!")
+        if not os.path.exists(full_path):
+            abort(400, message="File was not found in current path!")
 
-        if not os.path.isfile(requested_path):
-            abort(400, message="Path does not contain a file!")
+        if not os.path.isfile(full_path):
+            abort(400, message="File name is not a file!")
 
-        os.remove(requested_path)
+        if not self.is_allowed(full_path):
+            abort(403, message="You are not allowed to this path")
+
+        os.remove(full_path)
 
         return {"message": "OK"}
