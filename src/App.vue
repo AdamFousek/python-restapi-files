@@ -1,9 +1,7 @@
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-xs-12 text-center">
-                <router-view></router-view>
-            </div>
+            <router-view></router-view>
         </div>
     </div>
 </template>
@@ -15,18 +13,6 @@ export default {
         return {
             data: '',
         };
-    },
-    created() {
-        const instance = axios.create({ baseURL: this.$serverUrl });
-
-        instance
-            .get('/hello')
-            .then((response) => {
-                console.log(response);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
     },
 };
 </script>

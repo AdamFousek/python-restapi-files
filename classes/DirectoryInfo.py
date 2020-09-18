@@ -15,7 +15,10 @@ class DirectoryInfo(Resource, RestrictionHelper):
             abort(403, message="You are not allowed to this path")
 
         data = []
-        data = self.get_directory_info(current_path)
+        try:
+            data = self.get_directory_info(current_path)
+        except PermissionError:
+            abort(403, message="Not Allowed there")
 
         result = {"data": data, "count": len(data)}
         return result
@@ -43,14 +46,14 @@ class DirectoryInfo(Resource, RestrictionHelper):
         """
         Create directory with path and dir_name variables
         """
-        request_data = request.get_json()
+        request_data = request.get_json(force=True)
         current_path = self.get_current_path()
-        dir_name = request_data['dir_name']
+        dir_name = request_data.get('dir_name')
+
+        if not dir_name:
+            abort(400, message="Path and directory name must not be empty!")
 
         full_path = os.path.join(current_path, dir_name)
-
-        if not full_path or not dir_name:
-            abort(400, message="Path and directory name must not be empty!")
 
         if os.path.exists(full_path):
             abort(400, message="Directory already exists!")
@@ -66,14 +69,14 @@ class DirectoryInfo(Resource, RestrictionHelper):
         """
         Remove directory by requested path
         """
-        request_data = request.get_json()
+        request_data = request.get_json(force=True)
         current_path = self.get_current_path()
-        requested_dir = request_data['dir_name']
+        requested_dir = request_data.get('dir_name')
+
+        if not requested_dir:
+            abort(400, message="Dir_name must not be empty!")
 
         full_path = os.path.join(current_path, requested_dir)
-
-        if not full_path:
-            abort(400, message="Path must not be empty!")
 
         if not os.path.exists(full_path):
             abort(400, message="Path was not found in the system!")
@@ -92,8 +95,8 @@ class DirectoryInfo(Resource, RestrictionHelper):
         """
         Set current path into file
         """
-        request_data = request.get_json()
-        requested_path = self.change_all_slashes(request_data['path'])
+        request_data = request.get_json(force=True)
+        requested_path = self.change_all_slashes(request_data.get('path'))
 
         if not requested_path:
             abort(400, message="Path must not be empty")

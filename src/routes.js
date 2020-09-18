@@ -5,5 +5,6 @@ import Home from './components/Home.vue';
 export const routes = [
     { path: '/', component: Home },
     { path: '/directories', component: Directories },
-    { path: '/settings', component: Settings }
+    { path: '/setting', component: Settings },
+    { path: '*', component: Home }
 ]

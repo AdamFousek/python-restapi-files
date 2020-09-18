@@ -2,7 +2,7 @@
     <div>
         <h1>Set your default path and restrictions or go to directories</h1>
 
-        <router-link to="/settings" class="btn btn-primary"
+        <router-link to="/setting" class="btn btn-primary"
             >Settings</router-link
         >
         <router-link to="/directories" class="btn btn-primary"

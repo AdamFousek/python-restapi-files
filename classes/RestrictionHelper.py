@@ -60,3 +60,18 @@ class RestrictionHelper():
             abort(400, message="Current path was not set yet.")
 
         return path
+
+    def get_current_file(self):
+        file = ""
+        try:
+            with open("requestedFile.txt", "r") as f:
+                lines = f.readlines()
+                for line in lines:
+                    file = line.strip()
+        except IOError:
+            pass
+
+        if not file:
+            abort(400, message="Current file was not set yet.")
+
+        return file
