@@ -6,7 +6,7 @@ import { routes } from './routes';
 
 Vue.use(VueRouter);
 
-Vue.prototype.$serverUrl = "http://127.0.0.1:7777/"
+Vue.prototype.$serverUrl = "http://localhost:7777/"
 
 Vue.filter('readable', timestamp => {
   var date = new Date(timestamp * 1000);
